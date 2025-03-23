@@ -1,8 +1,8 @@
 import aranet4
-import datetime
-import time
+import sys
 
 
+sys.coinit_flags = 0  # 0 means MTA
 device_mac = "60:C0:BF:A5:87:0B"
 entry_filter = {
     "last": 3
@@ -18,10 +18,16 @@ def getAllRecords():
 
 def getCurrentReading():
     print("Getting current record.")
-    reading = aranet4.client.get_current_readings(device_mac)
-    print("Finished getting record.")
-    return reading
+    try:
+        from bleak.backends.winrt.util import allow_sta
+        # tell Bleak we are using a graphical user interface that has been properly
+        # configured to work with asyncio
+        allow_sta()
+        reading = aranet4.client.get_current_readings(device_mac)
+        print("Finished getting record.")
+        return reading
+    except ImportError:
+        # other OSes and older versions of Bleak will raise ImportError which we
+        # can safely ignore
+        pass
 
-
-current = getCurrentReading()
-print(current.co2)
