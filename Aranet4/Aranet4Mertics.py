@@ -40,7 +40,7 @@ def on_scan(advertisement):
     print()
 
 
-async def scanAranet4(argv):
+async def scanAranet4Continuously(argv):
     scanner = Aranet4Scanner(on_scan)
     await scanner.start()
     while True:  # Run forever
@@ -48,19 +48,21 @@ async def scanAranet4(argv):
     await scanner.stop()
 
 
-"""
-def set_CO2_data():
-    val = Aranet4DataReader.getCurrentReading().co2
-    print("CO2 reading is " + str(val))
-    g.set(val)   # Set to a given value
-"""
+async def scanAranet4():
+    scanner = Aranet4Scanner(on_scan)
+    await scanner.start()
+    await scanner.stop()
+
 
 # Main process
 g = Gauge('CO2_PPM', 'CO2 PPM from Aranet4 Sensor')
-# set_CO2_data()
+asyncio.run(scanAranet4())  # scans once, so graph doesn't start at 0
 print("Starting metrics endpoint")
 start_http_server(8000)
 try:
-    asyncio.run(scanAranet4(SCRAPE_DELAY))
+    # tell Bleak we are using a graphical user interface that has been properly\
+    from bleak.backends.winrt.util import allow_sta
+    allow_sta()
+    asyncio.run(scanAranet4Continuously(SCRAPE_DELAY))
 except KeyboardInterrupt:
     print("User interupted.")
