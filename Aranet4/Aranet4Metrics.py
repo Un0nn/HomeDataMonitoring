@@ -3,6 +3,7 @@ from prometheus_client import start_http_server, Gauge, CollectorRegistry
 import Aranet4DataReader
 from aranet4 import Aranet4Scanner
 import asyncio
+import time
 
 
 SCRAPE_DELAY = 10
@@ -38,6 +39,7 @@ def on_scan(advertisement):
         print(f"  Ago:           {advertisement.readings.ago} s")
         g.set(advertisement.readings.co2)  # Set Prometheus data
     print()
+    time.sleep(SCRAPE_DELAY)
 
 
 async def scanAranet4Continuously(argv):
@@ -48,6 +50,7 @@ async def scanAranet4Continuously(argv):
     await scanner.stop()
 
 
+
 async def scanAranet4():
     scanner = Aranet4Scanner(on_scan)
     await scanner.start()
@@ -56,7 +59,7 @@ async def scanAranet4():
 
 # Main process
 g = Gauge('CO2_PPM', 'CO2 PPM from Aranet4 Sensor')
-asyncio.run(scanAranet4())  # scans once, so graph doesn't start at 0
+# asyncio.run(scanAranet4())  # scans once, so graph doesn't start at 0
 print("Starting metrics endpoint")
 start_http_server(8000)
 try:
