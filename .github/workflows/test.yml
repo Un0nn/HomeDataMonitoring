@@ -1,0 +1,40 @@
+name: Python package
+
+on: 
+    pull_request:
+        branches: [ "main" ]
+
+jobs:
+    build:
+
+        runs-on: ${{ matrix.os }}
+        strategy:
+            matrix:
+                os: [ubuntu-latest, windows-latest, macos-latest]
+                python-version:  ["3.9", "3.10", "3.11", "3.12", "3.13"] # TODO: Use setup-python to configure version: https://docs.github.com/en/actions/use-cases-and-examples/building-and-testing/building-and-testing-python#using-the-default-python-version
+
+        steps:
+            - uses: actions/checkout@v4
+            - name: Set up Python
+              uses: actions/setup-python@v5
+              with:
+                python-version: ${{ matrix.python-version }}
+                cache: 'pip'
+            - name: Install dependencies
+              run: |
+                python -m pip install --upgrade pip
+                pip install -r requirements.txt
+                pip install aranet4
+                pipx install ruff 
+            - name: Display Python version
+              run: python -c "import sys; print(sys.version)"
+            - name: Lint code
+              run: ruff check --output-format=github --target-version=py39
+            - name: Check code formatting
+              run: ruff format --diff --target-version=py39
+              continue-on-error: true
+            # TODO: Write and run tests:
+            # - name: Test builds with pytest
+            #   run: |
+            #     pip install pytest pytest-cov
+            #     pytest Aranet4Metrics.py --doctest-modules
