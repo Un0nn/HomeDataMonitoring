@@ -1,9 +1,7 @@
-import time
-from prometheus_client import start_http_server, Gauge, CollectorRegistry
-
-from aranet4 import Aranet4Scanner
 import asyncio
 import time
+from prometheus_client import start_http_server, Gauge
+from aranet4 import Aranet4Scanner
 
 
 SCRAPE_DELAY = 10
@@ -26,7 +24,6 @@ async def scanAranet4Continuously(argv):
     await scanner.stop()
 
 
-
 async def scanAranet4():
     scanner = Aranet4Scanner(on_scan)
     await scanner.start()
@@ -44,4 +41,4 @@ try:
     allow_sta()
     asyncio.run(scanAranet4Continuously(SCRAPE_DELAY))
 except KeyboardInterrupt:
-    print("User interupted.")
+    print("User interrupted.")
