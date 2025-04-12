@@ -1,13 +1,12 @@
 import asyncio
 import time
 from prometheus_client import start_http_server, Gauge
-from aranet4 import Aranet4Scanner
 import Aranet4Scraping
 import os
 from dotenv import load_dotenv
 
 
-load_dotenv()  # take environment variables
+load_dotenv()
 TARGET_MAC = os.getenv("target_mac")
 SCRAPE_DELAY = int(os.getenv("scrape_delay"))
 
