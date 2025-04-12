@@ -15,25 +15,21 @@ async def get_current_reading(aranet4_mac: str = None):
     stop_event = None
     current_reading: list[aranet4.client.CurrentReading] = [None]
 
-    # callback for scanner
     def callback(device, ad_data):
-        # if device address matches aranet address, set stop_event, that will stop scanner.
         if device.address == aranet4_mac:
             adv = Aranet4Advertisement(device, ad_data)
             print("Found specified Aranet4.")
             if adv:
-                print(adv.readings.toString())
                 current_reading[0] = adv.readings
             stop_event.set()
 
     while True:
         stop_event = asyncio.Event()
         async with BleakScanner(callback):
-            print("Scanner started")
+            print("\nScanner started")
 
-            # wait for correct device in callback
-            await stop_event.wait()
-            print("Scanner stopped.")
+            await stop_event.wait()  # wait for correct device in callback
+            print("Scanner stopped.\n")
 
         return current_reading[0]
 
@@ -45,9 +41,7 @@ async def scan_aranet4_device(aranet4_mac: str, scrape_interval: int, callback):
     """
     stop_event = None
 
-    # callback for scanner
     def callback(device, ad_data):
-        # if device address matches aranet address, set stop_event, that will stop scanner.
         if device.address == aranet4_mac:
             adv = Aranet4Advertisement(device, ad_data)
             print("Found specified Aranet4.")
@@ -60,13 +54,7 @@ async def scan_aranet4_device(aranet4_mac: str, scrape_interval: int, callback):
         async with BleakScanner(callback):
             print("Scanner started")
 
-            # wait for correct device in callback
-            await stop_event.wait()
+            await stop_event.wait()  # wait for correct device in callback
             print("Scanner stopped.")
 
         time.sleep(scrape_interval)
-
-
-#asyncio.run(scan_aranet4_device("60:C0:BF:A5:87:0B", 10))
-result = asyncio.run(get_current_reading("60:C0:BF:A5:87:0B"))
-print(result.toString())

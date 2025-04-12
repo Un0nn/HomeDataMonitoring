@@ -2,43 +2,29 @@ import asyncio
 import time
 from prometheus_client import start_http_server, Gauge
 from aranet4 import Aranet4Scanner
+import Aranet4Scraping
+import os
+from dotenv import load_dotenv
 
 
-SCRAPE_DELAY = 10
+load_dotenv()  # take environment variables
+TARGET_MAC = os.getenv("target_mac")
+SCRAPE_DELAY = int(os.getenv("scrape_delay"))
 
 
-def on_scan(advertisement):
-    if not advertisement.readings:
-        return
-
-    g.set(advertisement.readings.co2)  # Set Prometheus data
-    print(advertisement.readings.toString())
-    time.sleep(SCRAPE_DELAY)
-
-
-async def scanAranet4Continuously(argv):
-    scanner = Aranet4Scanner(on_scan)
-    await scanner.start()
-    while True:  # Run forever
-        await asyncio.sleep(argv)
-    await scanner.stop()
-
-
-async def scanAranet4():
-    scanner = Aranet4Scanner(on_scan)
-    await scanner.start()
-    await scanner.stop()
-
-
-# Main process
+print(f"Starting to scan for {TARGET_MAC}")
+result = asyncio.run(Aranet4Scraping.get_current_reading(TARGET_MAC))  # scans once, so graph starts at value
 g = Gauge('CO2_PPM', 'CO2 PPM from Aranet4 Sensor')
-# asyncio.run(scanAranet4())  # scans once, so graph doesn't start at 0
+g.set(result.co2)
 print("Starting metrics endpoint")
 start_http_server(8000)
 try:
-    # tell Bleak we are using a graphical user interface that has been properly\
-    from bleak.backends.winrt.util import allow_sta
-    allow_sta()
-    asyncio.run(scanAranet4Continuously(SCRAPE_DELAY))
+    print("scanning forever")
+    while True:
+        result = asyncio.run(Aranet4Scraping.get_current_reading(TARGET_MAC))
+        print(f"Found value: {result.co2}")
+        g.set(result.co2)
+        print(f"Waiting {SCRAPE_DELAY} seconds")
+        time.sleep(SCRAPE_DELAY)
 except KeyboardInterrupt:
     print("User interrupted.")
