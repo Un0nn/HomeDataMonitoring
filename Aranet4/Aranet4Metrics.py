@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 TARGET_MAC = os.getenv("target_mac")
-SCRAPE_DELAY = int(os.getenv("scrape_delay"))
+SCRAPE_DELAY = int(os.getenv("scrape_delay")) if os.getenv("scrape_delay") is not None else 15
 
 
 print(f"Starting to scan for {TARGET_MAC}")
