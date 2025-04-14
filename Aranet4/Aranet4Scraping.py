@@ -2,7 +2,7 @@ import asyncio
 import time
 
 import aranet4.client
-from aranet4.client import Aranet4Advertisement
+from aranet4.client import Aranet4Advertisement, Aranet4
 from bleak import BleakScanner
 
 
@@ -16,7 +16,10 @@ async def get_current_reading(aranet4_mac: str = None):
     current_reading: list[aranet4.client.CurrentReading] = [None]
 
     def callback(device, ad_data):
-        if device.address == aranet4_mac:
+        if aranet4_mac is None or device.address == aranet4_mac:
+            if Aranet4.MANUFACTURER_ID not in ad_data.manufacturer_data:
+                return
+
             adv = Aranet4Advertisement(device, ad_data)
             print("Found specified Aranet4.")
             if adv:
